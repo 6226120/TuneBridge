@@ -1,6 +1,9 @@
 import { configDotenv } from 'dotenv'
 configDotenv.config 
 const express = require('express')
+const request = require('request')
+const QueryString = require('querystring')
+const cors = require('cors')
 const app = express()
 const port = 3000
 
@@ -21,7 +24,7 @@ app.get('/login', (req, res) => {
     }))
 
 })
-app.get('callback', (req, res) => {
+app.get('/callback', (req, res) => {
     var code = req.query.code || null;
     var state = req.query.state || null;
 
@@ -43,8 +46,17 @@ app.get('callback', (req, res) => {
             },
             json: true
         };
+
+        request.post(authOptions, (error, body, response) => {
+            if(!error && response.statusCode === 200){
+                var access_token = body.access_token,
+                refresh_token = body.refresh_token
+            }
+        });
+
     }
 });
+
 app.get('/refresh_token', (req, res)=>{
     var refresh_token = req.query.refresh_token;
     var authOptions = {
@@ -72,4 +84,27 @@ app.get('/refresh_token', (req, res)=>{
         }
     });
 });
-app.get('/playlists')
+app.get('/users/:user_id/playlists', (req, res) => {
+
+    user_id = req.params.user_id;
+    var authOptions = {
+        url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists',
+        headers: {
+            'Authoirzation' : 'Bearer' + access_token
+        }
+
+    }
+
+    fetch(authOptions.url,{
+        method: 'GET',
+        headers: {
+            'Authorization': authOptions.headers.Authorization
+        }
+    })
+    .then(response => {
+        if(!response.ok){
+            throw new Error('Network response was not ok' + response.statusText);
+        }
+        return response.json();
+    })
+});
