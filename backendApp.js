@@ -7,12 +7,18 @@ import  fetch  from 'node-fetch'
 import * as querystring from 'querystring'
 import cors from 'cors'
 const app = express()
-const port = 3000
+const port = 4000
 
 let Client_id = process.env.CLIENT_ID
 let Client_secret = process.env.CLIENT_SECRET
-const redirect_uri = 'http://localhost:3000/callback'
+let user_id1 = ""
+const redirect_uri = 'http://localhost:4000/callback'
 
+app.use(cors({
+    origin: "http://localhost:3000", // Allow your frontend
+    credentials: true,               // Optional: if using cookies/auth
+  }));
+  
 app.get('/', (req, res) => {
     res.send(`
         <html>
@@ -38,12 +44,17 @@ app.get('/login', (req, res) => {
         redirect_uri: redirect_uri,
         state: state
       });
+
+    console.log('Login route - Redirecting to:', 'https://accounts.spotify.com/authorize?' + params);
+    console.log('Client ID:', Client_id);
+    console.log('Redirect URI:', redirect_uri);
       
       res.redirect('https://accounts.spotify.com/authorize?' + params);
       console.log("Working So far 1");
     })
 
 app.get('/callback', (req, res) => {
+    console.log("Working So far 2")
     var code = req.query.code || null;
     var state = req.query.state || null;
     
@@ -54,7 +65,7 @@ app.get('/callback', (req, res) => {
             error: 'state_mismatch'
         }))
     } else {
-        
+        console.log("Working So far 3.12")
         var authOptions = {
 
             url: 'https://accounts.spotify.com/api/token',
@@ -64,13 +75,15 @@ app.get('/callback', (req, res) => {
                 grant_type: 'authorization_code'
             },
             headers: {
-                'content-type': 'applciation/x-www-form-urlencoded',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization' : 'Basic ' +(Buffer.from(Client_id + ':' + Client_secret).toString('base64'))
             },
             json: true
         };
 
-        request.post(authOptions, (error, body, response) => {
+        request.post(authOptions, (error, response, body) => {
+            user_ID = body.id;
+            console.log("Working So far 3.2")
             if(!error && response.statusCode === 200){
                 var access_token = body.access_token,
                 refresh_token = body.refresh_token
@@ -86,17 +99,17 @@ app.get('/callback', (req, res) => {
                     console.log(body);
                   });
           
-                  // we can also pass the token to the browser to make requests from there
-                  res.redirect('/#' +
-                    querystring.stringify({
-                      access_token: access_token,
-                      refresh_token: refresh_token
-                    }));
+                  res.redirect(`http://localhost:3000/#${querystring.stringify({
+                    access_token,
+                    refresh_token,
+                    user_ID
+                })}`);
                 } else {
-                  res.redirect('/#' +
-                    querystring.stringify({
-                      error: 'invalid_token'
-                    }));
+                    console.log('Token error:', error, body); // Add logging
+                    res.redirect('/#' +
+                        querystring.stringify({
+                            error: 'invalid_token'
+                        }));
             }
         });
 
@@ -131,9 +144,19 @@ app.get('/refresh_token', (req, res)=>{
         }
     });
 });
-const getPlaylist = function (req, res) {
 
-    user_id = req.params.user_id;
+app.post('/getUserID', (req, res) => {
+
+    user_id1 = req.body;
+    console.log("User ID:", user_id1.user_id);
+    res.redirect('/getPlaylists');
+    console.log("Working So far 4")
+});
+
+app.get('/getPlaylists', (req, res) => {
+
+    user_id = user_id1.user_id;
+    console.log("User ID:", user_id);
     var authOptions = {
         url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists',
         headers: {
@@ -154,7 +177,8 @@ const getPlaylist = function (req, res) {
         }
         return response.json();
     })
-};
+
+});
 
 function generateRandomString(length) {
     let result = '';
