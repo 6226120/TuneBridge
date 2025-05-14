@@ -6,6 +6,7 @@ import request from 'request'
 import  fetch  from 'node-fetch'
 import * as querystring from 'querystring'
 import cors from 'cors'
+import prisma from 'tunebridge/lib/prisma.js'
 const app = express()
 const port = 4000
 
@@ -82,7 +83,6 @@ app.get('/callback', (req, res) => {
         };
 
         request.post(authOptions, (error, response, body) => {
-            user_ID = body.id;
             console.log("Working So far 3.2")
             if(!error && response.statusCode === 200){
                 var access_token = body.access_token,
@@ -92,28 +92,42 @@ app.get('/callback', (req, res) => {
                     url: 'https://api.spotify.com/v1/me',
                     headers: { 'Authorization': 'Bearer ' + access_token },
                     json: true
-                  };
-          
-                  // use the access token to access the Spotify Web API
-                  request.get(options, function(error, response, body) {
-                    console.log(body);
-                  });
-          
-                  res.redirect(`http://localhost:3000/#${querystring.stringify({
-                    access_token,
-                    refresh_token,
-                    user_ID
-                })}`);
-                } else {
-                    console.log('Token error:', error, body); // Add logging
-                    res.redirect('/#' +
-                        querystring.stringify({
-                            error: 'invalid_token'
-                        }));
+                };
+                
+                // Wrap request in a Promise
+                new Promise((resolve, reject) => {
+                    request.get(options, function(error, response, body) {
+                        if (error) {
+                            console.error('Error fetching user profile:', error);
+                            reject(error);
+                        } else {
+                            console.log(body);
+                            user_id1 = body.id;
+                            resolve(body);
+                        }
+                    });
+                })
+                .then(() => {
+                    // Redirect after user_id1 is set
+                    res.redirect(`http://localhost:3000/#${querystring.stringify({
+                        access_token,
+                        refresh_token,
+                        user_id1
+                    })}`);
+                })
+                .catch((err) => {
+                    console.error('Failed to get user profile:', err);
+                    res.redirect('/#' + querystring.stringify({
+                        error: 'failed_to_get_profile'
+                    }));
+                });
+            } else {
+                console.log('Token error:', error, body);
+                res.redirect('/#' + querystring.stringify({
+                    error: 'invalid_token'
+                }));
             }
         });
-
-
     }
 });
 

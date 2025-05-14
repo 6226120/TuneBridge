@@ -9,7 +9,6 @@ export default function Home() {
   const handleConnectClick = () => {
     window.location.href = "http://localhost:4000/login";
     const token_response =response.json();
-    console.log("hello");
     console.log(token_response);
     }
 
