@@ -104,8 +104,8 @@ app.get("/callback", (req, res) => {
     request.post(authOptions, (error, response, body) => {
       console.log("Working So far 3.2");
       if (!error && response.statusCode === 200) {
-        access_token = body.access_token,
-        refresh_token = body.refresh_token;
+        (access_token = body.access_token),
+          (refresh_token = body.refresh_token);
 
         var options = {
           url: "https://api.spotify.com/v1/me",
@@ -205,25 +205,33 @@ app.get("/getPlaylists", (req, res) => {
   var authOptions = {
     url: "https://api.spotify.com/v1/users/" + user_id + "/playlists",
     headers: {
-      Authoirzation: "Bearer" + access_token,
+      Authoirzation: "Bearer " + access_token,
     },
   };
+  console.log("URL:", authOptions.url);
   console.log("Working So far 5");
   fetch(authOptions.url, {
     method: "GET",
     headers: {
-      Authorization: authOptions.headers.Authorization,
+      Authorization: authOptions.headers.Authoirzation,
     },
   }).then((response) => {
     if (!response.ok) {
+      console.log("Response:", response);
+      console.log("Response Status:", response.status);
       throw new Error("Network response was not ok" + response.statusText);
     }
     console.log("Working So far 6");
-    console.log("Response:", response);
-    console.log("Response Status:", response.status);
     return response.json();
+  }).then((data) => {
+    console.log("Data:", data);
+    res.json(data);
+  })
+  .catch((err) => {
+    console.error("Error fetching playlists:", err);
+    res.status(500).json({ error: "Failed to fetch playlists" });
   });
-});
+})
 
 function generateRandomString(length) {
   let result = "";

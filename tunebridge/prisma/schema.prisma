@@ -25,9 +25,21 @@ model User {
   lastname  String
   username  String     @unique
   password  String
+  created_at DateTime
 
   playlists Playlist[]
   userToken UserToken?
+  Credentials Credentials?
+}
+
+model Credentials {
+  credential_id Int @id @default(autoincrement())
+  password_hash String 
+  last_login DateTime 
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+
 }
 
 model UserToken {

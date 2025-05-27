@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 
 
 export default function Home() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
 
   const [user_id, setUserId] = useState(null);
 
@@ -22,16 +22,23 @@ export default function Home() {
   const handleConnectClick = () => {
     window.location.href = "http://localhost:4000/login";
     }
-
-  const handleGetPlaylist = () => {
-    fetch("http://localhost:4000/getPlaylists", {
+        // fetch("http://localhost:4000/getPlaylists", {
+    //   method: "GET",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   }
+    // })
+  const handleGetPlaylist = async() => {
+    const response  = await fetch("http://localhost:4000/getPlaylists", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-      }
-      // body: JSON.stringify({
-      //   user_id: user_id
-    })
+      },
+    });
+    const data1 = await response.json();
+    console.log("Data from backend:", data1.items);
+    setData(data1.items);
+    
   };
   return (
     <div className="bg-white shadow-md border border-gray-300 rounded-lg p-4 max-w-md mx-auto my-4">
@@ -47,9 +54,15 @@ export default function Home() {
       >
         Get User Playlists
       </button>
-      <p className="text-gray-800 text-sm mt-4">
-        {data ? JSON.stringify(data, null, 2) : "No data yet."}
-      </p>
+      <div className="text-gray-800 text-sm mt-4">
+        You have the folling Playlists: 
+        
+        <ul>
+           {data.map((playlist) => (
+          <li key={playlist.id}>{playlist.name}</li>
+        ))} 
+          </ul>
+      </div>
     </div>
   );
 }
