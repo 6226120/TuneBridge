@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "../components/Navbar";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,10 +21,17 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className="min-h-screen flex flex-col bg-black text-white">
+        <header className="text-center py-6 border-b border-gray-800">
+          <h1 className="text-3xl font-bold">Welcome to TuneBridge</h1>
+          <Navbar />
+        </header>
+
+        <main className="flex-1 flex items-center justify-center px-4">
+          {children}
+        </main>
+
+        <Footer />
       </body>
     </html>
   );

@@ -1,68 +1,43 @@
+// src/app/page.js
 "use client";
-
-import React, { useEffect, useState } from "react";
-
-
+import React from "react";
 
 export default function Home() {
-  const [data, setData] = useState([]);
-
-  const [user_id, setUserId] = useState(null);
-
-  useEffect(() => {
-    // Ensure this code runs only in the browser
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.hash.substring(1));
-      setUserId(params.get("user_id1"));
-      console.log("User ID:", user_id);
-    }
-  }, []);
-  
-
-  const handleConnectClick = () => {
-    window.location.href = "http://localhost:4000/login";
-    }
-        // fetch("http://localhost:4000/getPlaylists", {
-    //   method: "GET",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   }
-    // })
-  const handleGetPlaylist = async() => {
-    const response  = await fetch("http://localhost:4000/getPlaylists", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data1 = await response.json();
-    console.log("Data from backend:", data1.items);
-    setData(data1.items);
-    
-  };
   return (
-    <div className="bg-white shadow-md border border-gray-300 rounded-lg p-4 max-w-md mx-auto my-4">
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        onClick={handleConnectClick}
-      >
-        Connect to Spotify
-      </button>
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        onClick={handleGetPlaylist}
-      >
-        Get User Playlists
-      </button>
-      <div className="text-gray-800 text-sm mt-4">
-        You have the folling Playlists: 
-        
-        <ul>
-           {data.map((playlist) => (
-          <li key={playlist.id}>{playlist.name}</li>
-        ))} 
+    <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+      <div className="bg-white text-black max-w-2xl w-full rounded-lg shadow-lg p-8 space-y-6">
+        <h1 className="text-3xl font-bold text-center">
+          🎵 Welcome to TuneBridge
+        </h1>
+
+        <p className="text-lg text-center">
+          TuneBridge lets you transfer your playlists effortlessly between
+          Spotify and Apple Music.
+        </p>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-2">How It Works</h2>
+          <ul className="list-disc list-inside space-y-1">
+            <li>🔗 Connect your music accounts (Spotify & Apple Music)</li>
+            <li>📂 Choose the playlist you want to transfer</li>
+            <li>🚀 Click "Transfer" and you're done!</li>
           </ul>
+        </section>
+
+        <section className="bg-gray-100 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">🎬 Live Demo</h3>
+          <div className="border border-gray-300 rounded-md p-4 text-center">
+            <p className="text-gray-600">[Demo preview here]</p>
+            <p className="text-sm text-gray-500 mt-2">
+              * This would show a sample playlist transfer UI
+            </p>
+          </div>
+        </section>
+
+        <div className="text-center text-sm text-gray-500">
+          &copy; 2025 TuneBridge. All rights reserved.
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
