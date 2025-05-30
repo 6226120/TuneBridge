@@ -26,6 +26,7 @@ model User {
   username  String     @unique
   password  String
   created_at DateTime
+  phonenumber Int 
 
   playlists Playlist[]
   userToken UserToken?
